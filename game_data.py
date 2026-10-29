@@ -43,7 +43,8 @@ ALL_UNITS_DATABASE = [
     {"id": 0, "name": "หมัดหมี", "stars": 1, "range": 58, "damage": 18, "cooldown": 2.0, "cost": 35, "color": (230, 130, 80)},
     {"id": 1, "name": "นักธนู", "stars": 1, "range": 190, "damage": 11, "cooldown": 3.0, "cost": 55, "color": (65, 170, 105)},
     {"id": 2, "name": "จอมเวท", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 3, "name": "ตัวแถม", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)}
+    {"id": 3, "name": "ตัวแถม", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
+    {"id": 4, "name": "ck", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)}
 ]
 
 STAGES = [
