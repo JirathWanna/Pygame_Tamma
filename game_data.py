@@ -32,8 +32,8 @@ PURPLE       = (150, 80, 220)
 
 # --- Global Player Economy Data ---
 PLAYER_DATA = {
-    "coins": 500,
-    "rubies": 1000,
+    "coins": 10000000,
+    "rubies": 100,
     "inventory": [0, 1, 2],       # ID ตัวละครที่มีในคลัง
     "loadout": [0, 1, 2]          # ID ตัวละครที่จัดลงทีม (3 ช่อง)
 }
@@ -41,8 +41,8 @@ PLAYER_DATA = {
 # --- Database ตัวละคร ( Template รองรับการเพิ่มตัวละครภายหลัง ) ---
 ALL_UNITS_DATABASE = [
     {"id": 0, "name": "อัศวินดำ", "stars": 1, "range": 58, "damage": 18, "cooldown": 2.0, "cost": 35, "color": (230, 130, 80)},
-    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 190, "damage": 11, "cooldown": 3.0, "cost": 55, "color": (65, 170, 105)},
-    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
+    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 250, "damage": 11, "cooldown": 3.0, "cost": 55, "color": (65, 170, 105)},
+    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
     {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
     {"id": 4, "name": "ช้างเอราวัณ", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
     {"id": 5, "name": "ศัตรู1", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
