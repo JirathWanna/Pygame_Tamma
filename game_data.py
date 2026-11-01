@@ -33,19 +33,23 @@ PURPLE       = (150, 80, 220)
 # --- Global Player Economy Data ---
 PLAYER_DATA = {
     "coins": 500,
-    "rubies": 100,
+    "rubies": 1000,
     "inventory": [0, 1, 2],       # ID ตัวละครที่มีในคลัง
     "loadout": [0, 1, 2]          # ID ตัวละครที่จัดลงทีม (3 ช่อง)
 }
 
 # --- Database ตัวละคร ( Template รองรับการเพิ่มตัวละครภายหลัง ) ---
 ALL_UNITS_DATABASE = [
-    {"id": 0, "name": "หมัดหมี", "stars": 1, "range": 58, "damage": 18, "cooldown": 2.0, "cost": 35, "color": (230, 130, 80)},
-    {"id": 1, "name": "นักธนู", "stars": 1, "range": 190, "damage": 11, "cooldown": 3.0, "cost": 55, "color": (65, 170, 105)},
-    {"id": 2, "name": "จอมเวท", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 3, "name": "ตัวแถม", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 4, "name": "ck", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)}
+    {"id": 0, "name": "อัศวินดำ", "stars": 1, "range": 58, "damage": 18, "cooldown": 2.0, "cost": 35, "color": (230, 130, 80)},
+    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 190, "damage": 11, "cooldown": 3.0, "cost": 55, "color": (65, 170, 105)},
+    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
+    {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
+    {"id": 4, "name": "ช้างเอราวัณ", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
+    {"id": 5, "name": "ศัตรู1", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
+    {"id": 6, "name": "ศัตรู2", "stars": 3, "range": 190, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
+    {"id": 7, "name": "ศัตรู3", "stars": 3, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)}
 ]
+
 
 STAGES = [
     {"id": 1, "name": "ด่าน 1: ทุ่งหญ้าสงบสุข", "enemy_hp": 400, "spawn_timer": 4.5, "enemy_weights": [60, 30, 10], "bg_key": "bg_grass", "gold_reward": 150, "ruby_reward": 5},
@@ -81,7 +85,7 @@ def init_assets():
     ASSETS["bg_volcano"] = load_image("bg_volcano.png", (WIDTH, HEIGHT))
     ASSETS["btn_stage"] = load_image("btn_stage.png", (240, 130))
     for i in range(len(ALL_UNITS_DATABASE)):
-        ASSETS[f"unit_{i}"] = load_image(f"unit_{i}.png", (50, 50))
+        ASSETS[f"unit_{i}"] = load_image(f"unit_{i}.png", (100, 100))
 
 init_assets()
 

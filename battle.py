@@ -8,7 +8,7 @@ from game_data import *
 def run_stage_select():
     while True:
         screen.fill((40, 45, 60))
-        draw_text("🗺️ เลือกด่านที่ต้องการเล่น", WIDTH//2, 60, BIG, YELLOW_GOLD, center=True)
+        draw_text("เลือกด่านที่ต้องการเล่น", WIDTH//2, 60, BIG, YELLOW_GOLD, center=True)
 
         stage_rects = []
         for i, stage in enumerate(STAGES):
@@ -55,7 +55,7 @@ class Unit:
         self.hp = 100 if team == "player" else 85
         self.max_hp = self.hp
         self.attack_timer = random.uniform(0, 0.4)
-        self.speed = 27 if team == "player" else 23
+        self.speed = 60 if team == "player" else 40
         self.y = 390 + random.randint(-12, 12)
         self.alive = True
 
@@ -138,7 +138,7 @@ def run_battle_game(stage_data):
             enemy_spawn_timer -= dt
             if enemy_spawn_timer <= 0:
                 enemy_spawn_timer = stage_data["spawn_timer"]
-                kind = random.choices([0, 1, 2], weights=stage_data["enemy_weights"])[0]
+                kind = random.choices([5, 6, 6], weights=stage_data["enemy_weights"])[0]
                 units.append(Unit(enemy_base - 42, "enemy", kind))
 
             for unit in units:

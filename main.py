@@ -21,8 +21,8 @@ def draw_gacha_animation(pull_count):
             chosen = random.choice([u for u in ALL_UNITS_DATABASE if u["stars"] == 1])
         else:
             chosen = random.choice([u for u in ALL_UNITS_DATABASE if u["stars"] == 2])
-        results.append(chosen)
-        if chosen["id"] not in PLAYER_DATA["inventory"]:
+        results.append(chosen) 
+        if chosen["id"] not in PLAYER_DATA["inventory"]: #ถ้าตัวไม่อยู่ใน Inventory ให้เพิ่มไป
             PLAYER_DATA["inventory"].append(chosen["id"])
 
     while pygame.time.get_ticks() - start_time < duration:
@@ -77,7 +77,7 @@ def main_lobby():
                 unit_data = ALL_UNITS_DATABASE[slot_unit_id]
                 unit_img = ASSETS.get(f"unit_{slot_unit_id}")
                 if unit_img:
-                    screen.blit(unit_img, (x - 25, y - 45))
+                    screen.blit(unit_img, (x - 50, y - 80))
                 else:
                     pygame.draw.circle(screen, unit_data["color"], (x, y - 20), 20)
 
