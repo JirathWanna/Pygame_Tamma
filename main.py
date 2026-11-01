@@ -35,7 +35,7 @@ def draw_gacha_animation(pull_count):
         pygame.draw.circle(screen, YELLOW_GOLD, (center_x, center_y), radius, 4)
         pygame.draw.circle(screen, PURPLE, (center_x, center_y), radius + 30, 2)
         
-        draw_text("🔮 กำลังสุ่มอัญเชิญเรนเจอร์...", center_x, center_y + 160, BIG, YELLOW_GOLD, center=True)
+        draw_text("กำลังสุ่มอัญเชิญเรนเจอร์...", center_x, center_y + 160, BIG, YELLOW_GOLD, center=True)
         
         pygame.display.flip()
         clock.tick(60)
@@ -95,22 +95,22 @@ def main_lobby():
 
             # --- TAB 2: กาชา (GACHA) ---
             if active_tab == "GACHA":
-                draw_text("🎰 สุ่มอัญเชิญเรนเจอร์ (Gacha)", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
-                draw_text("โอกาสได้รับ: ⭐1 ดาว (70%) | ⭐2 ดาว (30%)", pop_rect.centerx, pop_rect.top + 75, FONT, (80, 80, 80), center=True)
+                draw_text("สุ่มอัญเชิญเรนเจอร์ (Gacha)", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
+                draw_text("โอกาสได้รับ: 1 ดาว (70%) | 2 ดาว (30%)", pop_rect.centerx, pop_rect.top + 75, FONT, (80, 80, 80), center=True)
 
                 gacha_1_btn = pygame.Rect(pop_rect.centerx - 220, pop_rect.top + 200, 180, 70)
                 pygame.draw.rect(screen, GREEN if PLAYER_DATA["rubies"] >= 10 else (180, 180, 180), gacha_1_btn, border_radius=12)
                 draw_text("สุ่ม 1 ครั้ง", gacha_1_btn.centerx, gacha_1_btn.centery - 12, FONT, WHITE, center=True)
-                draw_text("💎 10", gacha_1_btn.centerx, gacha_1_btn.centery + 15, FONT, YELLOW_GOLD, center=True)
+                draw_text("10", gacha_1_btn.centerx, gacha_1_btn.centery + 15, FONT, YELLOW_GOLD, center=True)
 
                 gacha_10_btn = pygame.Rect(pop_rect.centerx + 40, pop_rect.top + 200, 180, 70)
                 pygame.draw.rect(screen, PURPLE if PLAYER_DATA["rubies"] >= 100 else (180, 180, 180), gacha_10_btn, border_radius=12)
                 draw_text("สุ่ม 10 ครั้ง", gacha_10_btn.centerx, gacha_10_btn.centery - 12, FONT, WHITE, center=True)
-                draw_text("💎 100", gacha_10_btn.centerx, gacha_10_btn.centery + 15, FONT, YELLOW_GOLD, center=True)
+                draw_text("100", gacha_10_btn.centerx, gacha_10_btn.centery + 15, FONT, YELLOW_GOLD, center=True)
 
             # --- TAB 3: อัปเกรด (UPGRADE) ---
             elif active_tab == "UPGRADE":
-                draw_text("⚡ อัปเกรดพลังโจมตีเรนเจอร์", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
+                draw_text("อัปเกรดพลังโจมตีเรนเจอร์", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
                 for idx, u_id in enumerate(PLAYER_DATA["inventory"]):
                     u = ALL_UNITS_DATABASE[u_id]
                     y_pos = pop_rect.top + 90 + idx * 75
@@ -118,7 +118,7 @@ def main_lobby():
                     
                     up_btn = pygame.Rect(pop_rect.right - 220, y_pos - 5, 160, 40)
                     pygame.draw.rect(screen, YELLOW_GOLD if PLAYER_DATA["coins"] >= 200 else (180, 180, 180), up_btn, border_radius=8)
-                    draw_text("อัปแรง (+2) 🪙200", up_btn.centerx, up_btn.centery, SMALL, BLACK, center=True)
+                    draw_text("อัปแรง (+2) 200", up_btn.centerx, up_btn.centery, SMALL, BLACK, center=True)
 
         # Popup สรุปผลการสุ่มกาชา
         if gacha_result:
@@ -126,7 +126,7 @@ def main_lobby():
             pygame.draw.rect(screen, WHITE, res_rect, border_radius=15)
             pygame.draw.rect(screen, YELLOW_GOLD, res_rect, 4, border_radius=15)
             
-            draw_text("🎉 ยินดีด้วย! คุณได้รับ:", res_rect.centerx, res_rect.top + 25, BIG, BLACK, center=True)
+            draw_text("ยินดีด้วย! คุณได้รับ:", res_rect.centerx, res_rect.top + 25, BIG, BLACK, center=True)
             
             # วาดการ์ดแสดงผล
             for i, res in enumerate(gacha_result[:10]): # แสดงไม่เกิน 10 ตัว
