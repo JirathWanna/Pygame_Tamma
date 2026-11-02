@@ -59,9 +59,9 @@ STAGES = [
 ]
 
 BOTTOM_NAV_ITEMS = [
-    {"id": "TEAM",    "label": "🛡️ ทีม",    "color": WOOD_BROWN},
-    {"id": "GACHA",   "label": "🎰 กาชา",   "color": WOOD_BROWN},
-    {"id": "UPGRADE", "label": "⚡ อัพเกรด", "color": WOOD_BROWN},
+    {"id": "TEAM",    "label": "ทีม",    "color": WOOD_BROWN},
+    {"id": "GACHA",   "label": "กาชา",   "color": WOOD_BROWN},
+    {"id": "UPGRADE", "label": "อัพเกรด", "color": WOOD_BROWN},
 ]
 
 # --- Asset Loader Manager ---
@@ -102,8 +102,8 @@ def draw_text(text, x, y, font=FONT, color=WHITE, center=False):
 
 def draw_top_bar():
     items = [
-        (f"💎 {PLAYER_DATA['rubies']}", (680, 25), (130, 36)),
-        (f"🪙 {PLAYER_DATA['coins']:,}", (830, 25), (150, 36))
+        (f"Ruby : {PLAYER_DATA['rubies']}", (680, 25), (130, 36)),
+        (f"Coin : {PLAYER_DATA['coins']:,}", (830, 25), (150, 36))
     ]
     for text, pos, size in items:
         rect = pygame.Rect(pos[0], pos[1], size[0], size[1])
