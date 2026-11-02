@@ -7,6 +7,8 @@ from game_data import *
 # ==========================================
 _FIG_CACHE = {}
 
+#Hi
+
 def _fig_image(unit_id, height):
     """รูป unit_X.png ย่อให้สูง height (ไม่มีไฟล์ -> None)"""
     key = (unit_id, height)
