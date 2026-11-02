@@ -138,7 +138,7 @@ def run_team_screen():
                 draw_unit_figure(screen, u_id, cx, cy + 10)
             draw_star_row(cx, cy + 38, u["stars"], 6)
             draw_text(u["name"], cx, cy + 82, FONT, BLACK, center=True)
-            draw_text(f"ATK {u['damage']}  ระยะ {u['range']}", cx, cy + 104, SMALL, (70, 50, 40), center=True)
+            draw_text(f"ATK {u['damage']} HP {u['hp']}", cx, cy + 104, SMALL, (70, 50, 40), center=True)
 
         # ----- แถบด้านบน -----
         pygame.draw.rect(screen, (60, 50, 80), (0, 0, WIDTH, 52))

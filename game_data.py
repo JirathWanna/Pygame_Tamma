@@ -4,6 +4,7 @@ import math
 import sys
 import os
 
+
 # --- Pygame Setup ---
 pygame.init()
 WIDTH, HEIGHT = 1000, 620
@@ -40,21 +41,21 @@ PLAYER_DATA = {
 
 # --- Database ตัวละคร ( Template รองรับการเพิ่มตัวละครภายหลัง ) ---
 ALL_UNITS_DATABASE = [
-    {"id": 0, "name": "อัศวินดำ", "stars": 1, "range": 58, "damage": 18, "cooldown": 2.0, "cost": 35, "color": (230, 130, 80)},
-    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 250, "damage": 11, "cooldown": 3.0, "cost": 55, "color": (65, 170, 105)},
-    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 4, "name": "ช้างเอราวัณ", "stars": 2, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 5, "name": "ศัตรู1", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 6, "name": "ศัตรู2", "stars": 3, "range": 190, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)},
-    {"id": 7, "name": "ศัตรู3", "stars": 3, "range": 310, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220)}
+    {"id": 0, "name": "อัศวินดำ", "stars": 1, "range": 58, "damage": 18, "cooldown": 5.0, "cost": 50, "color": (153, 76, 0), "hp": 200, "speed": 60},
+    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 250, "damage": 30, "cooldown": 3.0, "cost": 60, "color": (153, 76, 0), "hp": 100, "speed": 50},
+    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 60, "cooldown": 10.0, "cost": 85, "color": (153, 76, 0), "hp": 100, "speed": 30},
+    {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 2, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 100, "speed": 150},
+    {"id": 4, "name": "ช้างเอราวัณ", "stars": 2, "range": 80, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 500, "speed": 70},
+    {"id": 5, "name": "สไลม์", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 50, "speed": 70},
+    {"id": 6, "name": "หมาป่า", "stars": 3, "range": 190, "damage": 30, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 70, "speed": 50},
+    {"id": 7, "name": "ผีโคกะโหลก", "stars": 3, "range": 500, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 30, "speed": 70}
 ]
 
 
 STAGES = [
-    {"id": 1, "name": "ด่าน 1: ทุ่งหญ้าสงบสุข", "enemy_hp": 400, "spawn_timer": 4.5, "enemy_weights": [60, 30, 10], "bg_key": "bg_grass", "gold_reward": 150, "ruby_reward": 5},
-    {"id": 2, "name": "ด่าน 2: ทะเลทรายเดือด", "enemy_hp": 650, "spawn_timer": 3.5, "enemy_weights": [30, 50, 20], "bg_key": "bg_desert", "gold_reward": 250, "ruby_reward": 8},
-    {"id": 3, "name": "ด่าน 3: ภูเขาไฟมรณะ", "enemy_hp": 1000, "spawn_timer": 2.5, "enemy_weights": [20, 40, 40], "bg_key": "bg_volcano", "gold_reward": 400, "ruby_reward": 12}
+    {"id": 1, "name": "ด่าน 1: ทุ่งหญ้าสงบสุข", "enemy_hp": 400, "spawn_timer": 4.5, "enemy_weights": [60, 40, 0], "bg_key": "bg_grass", "gold_reward": 150, "ruby_reward": 5},
+    {"id": 2, "name": "ด่าน 2: ทะเลทรายเดือด", "enemy_hp": 650, "spawn_timer": 4.5, "enemy_weights": [60, 20, 20], "bg_key": "bg_desert", "gold_reward": 250, "ruby_reward": 8},
+    {"id": 3, "name": "ด่าน 3: ภูเขาไฟมรณะ", "enemy_hp": 1000, "spawn_timer": 4.5, "enemy_weights": [30, 30, 40], "bg_key": "bg_volcano", "gold_reward": 400, "ruby_reward": 12}
 ]
 
 BOTTOM_NAV_ITEMS = [
