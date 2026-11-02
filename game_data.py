@@ -42,26 +42,27 @@ PLAYER_DATA = {
 # --- Database ตัวละคร ( Template รองรับการเพิ่มตัวละครภายหลัง ) ---
 ALL_UNITS_DATABASE = [
     {"id": 0, "name": "อัศวินดำ", "stars": 1, "range": 58, "damage": 18, "cooldown": 5.0, "cost": 50, "color": (153, 76, 0), "hp": 200, "speed": 60},
-    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 250, "damage": 30, "cooldown": 3.0, "cost": 60, "color": (153, 76, 0), "hp": 100, "speed": 50},
+    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 400, "damage": 30, "cooldown": 3.0, "cost": 60, "color": (153, 76, 0), "hp": 100, "speed": 50},
     {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 60, "cooldown": 10.0, "cost": 85, "color": (153, 76, 0), "hp": 100, "speed": 30},
     {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 2, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 100, "speed": 150},
     {"id": 4, "name": "ช้างเอราวัณ", "stars": 2, "range": 80, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 500, "speed": 70},
     {"id": 5, "name": "สไลม์", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 50, "speed": 70},
     {"id": 6, "name": "หมาป่า", "stars": 3, "range": 190, "damage": 30, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 70, "speed": 50},
-    {"id": 7, "name": "ผีโคกะโหลก", "stars": 3, "range": 500, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 30, "speed": 70}
+    {"id": 7, "name": "ผีโคกะโหลก", "stars": 3, "range": 500, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 30, "speed": 70},
+    {"id": 7, "name": "กระสือ", "stars": 3, "range": 58, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 300, "speed": 150}
 ]
 
 
 STAGES = [
-    {"id": 1, "name": "ด่าน 1: ทุ่งหญ้าสงบสุข", "enemy_hp": 400, "spawn_timer": 4.5, "enemy_weights": [60, 40, 0], "bg_key": "bg_grass", "gold_reward": 150, "ruby_reward": 5},
-    {"id": 2, "name": "ด่าน 2: ทะเลทรายเดือด", "enemy_hp": 650, "spawn_timer": 4.5, "enemy_weights": [60, 20, 20], "bg_key": "bg_desert", "gold_reward": 250, "ruby_reward": 8},
-    {"id": 3, "name": "ด่าน 3: ภูเขาไฟมรณะ", "enemy_hp": 1000, "spawn_timer": 4.5, "enemy_weights": [30, 30, 40], "bg_key": "bg_volcano", "gold_reward": 400, "ruby_reward": 12}
+    {"id": 1, "name": "ด่าน 1: ทุ่งหญ้าสงบสุข", "enemy_hp": 400, "spawn_timer": 4.5, "enemy_weights": [60, 40, 0, 0], "bg_key": "bg_grass", "gold_reward": 150, "ruby_reward": 5},
+    {"id": 2, "name": "ด่าน 2: ทะเลทรายเดือด", "enemy_hp": 650, "spawn_timer": 4.5, "enemy_weights": [60, 20, 20, 0], "bg_key": "bg_desert", "gold_reward": 250, "ruby_reward": 8},
+    {"id": 3, "name": "ด่าน 3: ภูเขาไฟมรณะ", "enemy_hp": 1000, "spawn_timer": 3.0, "enemy_weights": [30, 0, 40, 30], "bg_key": "bg_volcano", "gold_reward": 400, "ruby_reward": 12}
 ]
 
 BOTTOM_NAV_ITEMS = [
-    {"id": "TEAM",    "label": "🛡️ ทีม",    "color": WOOD_BROWN},
-    {"id": "GACHA",   "label": "🎰 กาชา",   "color": WOOD_BROWN},
-    {"id": "UPGRADE", "label": "⚡ อัพเกรด", "color": WOOD_BROWN},
+    {"id": "TEAM",    "label": "ทีม",    "color": WOOD_BROWN},
+    {"id": "GACHA",   "label": "กาชา",   "color": WOOD_BROWN},
+    {"id": "UPGRADE", "label": "อัพเกรด", "color": WOOD_BROWN},
 ]
 
 # --- Asset Loader Manager ---
@@ -102,8 +103,8 @@ def draw_text(text, x, y, font=FONT, color=WHITE, center=False):
 
 def draw_top_bar():
     items = [
-        (f"💎 {PLAYER_DATA['rubies']}", (680, 25), (130, 36)),
-        (f"🪙 {PLAYER_DATA['coins']:,}", (830, 25), (150, 36))
+        (f"Ruby : {PLAYER_DATA['rubies']}", (680, 25), (130, 36)),
+        (f"Coin : {PLAYER_DATA['coins']:,}", (830, 25), (150, 36))
     ]
     for text, pos, size in items:
         rect = pygame.Rect(pos[0], pos[1], size[0], size[1])

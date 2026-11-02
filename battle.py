@@ -186,7 +186,7 @@ def run_battle_game(stage_data):
             enemy_spawn_timer -= dt
             if enemy_spawn_timer <= 0:
                 enemy_spawn_timer = stage_data["spawn_timer"]
-                kind = random.choices([5, 6, 7], weights=stage_data["enemy_weights"])[0]
+                kind = random.choices([5, 6, 7, 8], weights=stage_data["enemy_weights"])[0]
                 units.append(Unit(enemy_base - 42, "enemy", kind))
 
             # อัปเดตการเคลื่อนที่และการโจมตีของยูนิตทั้งหมด
