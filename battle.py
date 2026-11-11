@@ -126,6 +126,7 @@ def run_battle_game(stage_data):
     player_hp, enemy_hp = 500, stage_data["enemy_hp"] #เลือดป้อมเด้อ
     player_max_hp, enemy_max_hp = 500, stage_data["enemy_hp"]
     minerals, production_level = 150, 1
+    max_minerals = 500  # <--- กำหนดขีดจำกัดแร่เริ่มต้น
     enemy_spawn_timer = stage_data["spawn_timer"]
     
     units = []
@@ -189,6 +190,7 @@ def run_battle_game(stage_data):
                         if minerals >= cost:
                             minerals -= cost
                             production_level += 1
+                            max_minerals += 100  # <--- เพิ่มขีดจำกัดแร่สูงสุดทีละ 100 ทุกครั้งที่อัปเกรด
 
         if not game_over and not paused:
             # อัปเดตเวลา Cooldown ของปุ่มตัวละคร (หยุดนับระหว่าง Pause)
@@ -196,9 +198,9 @@ def run_battle_game(stage_data):
                 if cooldown_timers[i] > 0:
                     cooldown_timers[i] = max(0, cooldown_timers[i] - dt)
 
-            # ระบบผลิตแร่อัตโนมัติ
+            # ระบบผลิตแร่อัตโนมัติ (จำกัดไม่ให้เกิน max_minerals)
             production_interval = max(0.65, 2.5 / (1 + (production_level - 1) * 0.65))
-            minerals += (25 / production_interval) * dt
+            minerals = min(max_minerals, minerals + (25 / production_interval) * dt)
 
             # ระบบเกิดยูนิตฝ่ายศัตรู
             enemy_spawn_timer -= dt
@@ -258,8 +260,8 @@ def run_battle_game(stage_data):
             pygame.draw.rect(screen, GRASS, (0, 420, WIDTH, 100))
 
         # วาดฐานทัพ, ยูนิต และกระสุน
-        pygame.draw.rect(screen, BLUE, (player_base - 30, 300, 60, 135), border_radius=10)
-        pygame.draw.rect(screen, RED, (enemy_base - 30, 300, 60, 135), border_radius=10)
+        screen.blit(ASSETS["player_base"], (player_base - 60, 300))
+        screen.blit(ASSETS["enemy_base"], (enemy_base - 60, 300))
 
         pygame.draw.rect(screen, (65, 65, 65), (int(player_base - 21), int(275), 40, 5), border_radius=2)
         hpp = max(0, int(38 * player_hp / player_max_hp))
@@ -276,7 +278,9 @@ def run_battle_game(stage_data):
 
         # วาด UI แผงควบคุมด้านล่าง (แร่, ปุ่มยูนิต, ปุ่มอัปเกรด)
         pygame.draw.rect(screen, DARK_PANEL, (0, 490, WIDTH, 130))
-        draw_text(f"แร่: {int(minerals)}", 450, 20, BIG, YELLOW_GOLD)
+        
+        # แสดงผลแร่ปัจจุบัน / ขีดจำกัดสูงสุด เช่น 126 / 500
+        draw_text(f"แร่: {int(minerals)} / {max_minerals}", 450, 20, BIG, YELLOW_GOLD)
 
         # วาดปุ่ม Pause
         if not game_over:
