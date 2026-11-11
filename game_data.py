@@ -34,7 +34,7 @@ PURPLE       = (150, 80, 220)
 # --- Global Player Economy Data ---
 PLAYER_DATA = {
     "coins": 10000000,
-    "rubies": 100,
+    "rubies": 1000,
     "inventory": [0, 1, 2],       # ID ตัวละครที่มีในคลัง
     "loadout": [0, 1, 2]          # ID ตัวละครที่จัดลงทีม (3 ช่อง)
 }
@@ -49,7 +49,8 @@ ALL_UNITS_DATABASE = [
     {"id": 5, "name": "สไลม์", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 50, "speed": 70},
     {"id": 6, "name": "หมาป่า", "stars": 3, "range": 190, "damage": 30, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 70, "speed": 50},
     {"id": 7, "name": "ผีโคกะโหลก", "stars": 3, "range": 500, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 30, "speed": 70},
-    {"id": 7, "name": "กระสือ", "stars": 3, "range": 58, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 300, "speed": 150}
+    {"id": 8, "name": "กระสือ", "stars": 3, "range": 58, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 300, "speed": 150},
+    {"id": 9, "name": "โคนัน", "stars": 2, "range": 80, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 500, "speed": 70}
 ]
 
 
@@ -85,6 +86,8 @@ def init_assets():
     ASSETS["bg_grass"] = load_image("bg_grass.png", (WIDTH, HEIGHT))
     ASSETS["bg_desert"] = load_image("bg_desert.png", (WIDTH, HEIGHT))
     ASSETS["bg_volcano"] = load_image("bg_volcano.png", (WIDTH, HEIGHT))
+    ASSETS["player_base"] = load_image("player_base.png", (150, 150))
+    ASSETS["enemy_base"] = load_image("enemy_base.png", (150, 150))
     ASSETS["btn_stage"] = load_image("btn_stage.png", (240, 130))
     for i in range(len(ALL_UNITS_DATABASE)):
         ASSETS[f"unit_{i}"] = load_image(f"unit_{i}.png", (100, 100))

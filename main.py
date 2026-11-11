@@ -48,6 +48,7 @@ def draw_gacha_animation(pull_count):
 def main_lobby():
     active_tab = None
     gacha_result = None  # สำหรับแสดงหน้าสรุปผลสุ่ม
+    upgrade_scroll_offset = 0  # ตัวแปรสำหรับควบคุมการเลื่อนหน้าจออัปเกรด
 
     while True:
         if ASSETS["bg_lobby"]:
@@ -83,9 +84,9 @@ def main_lobby():
 
         nav_buttons = draw_bottom_navigation(active_tab)
 
-        # Popup สำหรับ Tabs
+        # Popup สำหรับ Tabs (ขยายความสูงขึ้นเล็กน้อยเพื่อให้แสดงผลได้ดีขึ้น)
         if active_tab:
-            pop_rect = pygame.Rect(120, 90, 760, 400)
+            pop_rect = pygame.Rect(100, 70, 800, 460)
             pygame.draw.rect(screen, WHITE, pop_rect, border_radius=15)
             pygame.draw.rect(screen, ORANGE_BORDER, pop_rect, 4, border_radius=15)
             
@@ -111,14 +112,26 @@ def main_lobby():
             # --- TAB 3: อัปเกรด (UPGRADE) ---
             elif active_tab == "UPGRADE":
                 draw_text("อัปเกรดพลังโจมตีเรนเจอร์", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
+                draw_text("ใช้ Wheel Scroll เพื่อเลื่อนดูรายการ", pop_rect.centerx, pop_rect.top + 65, SMALL, (120, 120, 120), center=True)
+                
+                # กำหนดพื้นที่แสดงผลรายการอัปเกรด (Clipping Area) เพื่อไม่ให้ล้นออกนอกกรอบ
+                content_area = pygame.Rect(pop_rect.left + 20, pop_rect.top + 90, pop_rect.width - 40, 350)
+                screen.set_clip(content_area)
+
                 for idx, u_id in enumerate(PLAYER_DATA["inventory"]):
                     u = ALL_UNITS_DATABASE[u_id]
-                    y_pos = pop_rect.top + 90 + idx * 75
-                    draw_text(f"{u['name']} (★{u['stars']}) - Atk: {u['damage']}", pop_rect.left + 50, y_pos, FONT, BLACK)
+                    y_pos = pop_rect.top + 100 + (idx * 75) + upgrade_scroll_offset
                     
-                    up_btn = pygame.Rect(pop_rect.right - 220, y_pos - 5, 160, 40)
-                    pygame.draw.rect(screen, YELLOW_GOLD if PLAYER_DATA["coins"] >= 200 else (180, 180, 180), up_btn, border_radius=8)
-                    draw_text("อัปแรง (+2) 200", up_btn.centerx, up_btn.centery, SMALL, BLACK, center=True)
+                    # วาดเฉพาะตัวที่อยู่ในพื้นที่แสดงผลเพื่อประหยัดการเรนเดอร์และป้องกันล้น
+                    if content_area.top - 75 <= y_pos <= content_area.bottom:
+                        draw_text(f"{u['name']} (★{u['stars']}) - Atk: {u['damage']} | HP: {u['hp']}", pop_rect.left + 40, y_pos, FONT, BLACK)
+                        
+                        up_btn = pygame.Rect(pop_rect.right - 220, y_pos - 5, 160, 40)
+                        pygame.draw.rect(screen, YELLOW_GOLD if PLAYER_DATA["coins"] >= 200 else (180, 180, 180), up_btn, border_radius=8)
+                        draw_text("อัปเกรด (+2 Atk, +20 HP)", up_btn.centerx, up_btn.centery, SMALL, BLACK, center=True)
+
+                # ยกเลิก Clipping เพื่อให้ UI ส่วนอื่นเรนเดอร์ได้ปกติ
+                screen.set_clip(None)
 
         # Popup สรุปผลการสุ่มกาชา
         if gacha_result:
@@ -128,8 +141,7 @@ def main_lobby():
             
             draw_text("ยินดีด้วย! คุณได้รับ:", res_rect.centerx, res_rect.top + 25, BIG, BLACK, center=True)
             
-            # วาดการ์ดแสดงผล
-            for i, res in enumerate(gacha_result[:10]): # แสดงไม่เกิน 10 ตัว
+            for i, res in enumerate(gacha_result[:10]):
                 row = i // 5
                 col = i % 5
                 cx = res_rect.left + 50 + col * 105
@@ -148,6 +160,14 @@ def main_lobby():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            
+            # จัดการการเลื่อนเมาส์ (Mouse Scroll) สำหรับหน้าอัปเกรด
+            if event.type == pygame.MOUSEWHEEL and active_tab == "UPGRADE":
+                upgrade_scroll_offset += event.y * 30
+                # คำนวณจำกัดขอบเขตการเลื่อนไม่ให้เลยข้อมูลที่มี
+                max_scroll = max(0, (len(PLAYER_DATA["inventory"]) * 75) - 300)
+                upgrade_scroll_offset = min(0, max(-max_scroll, upgrade_scroll_offset))
+
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = event.pos
 
@@ -156,13 +176,14 @@ def main_lobby():
                     if close_res_btn.collidepoint(pos):
                         gacha_result = None
                 elif active_tab:
-                    close_btn = pygame.Rect(835, 100, 35, 35)
+                    close_btn = pygame.Rect(pop_rect.right - 45, pop_rect.top + 10, 35, 35)
                     if close_btn.collidepoint(pos):
                         active_tab = None
+                        upgrade_scroll_offset = 0 # รีเซ็ต Scroll เมื่อปิดหน้าต่าง
                     
                     elif active_tab == "GACHA":
-                        g1 = pygame.Rect(260, 290, 180, 70)
-                        g10 = pygame.Rect(520, 290, 180, 70)
+                        g1 = pygame.Rect(pop_rect.centerx - 220, pop_rect.top + 200, 180, 70)
+                        g10 = pygame.Rect(pop_rect.centerx + 40, pop_rect.top + 200, 180, 70)
                         if g1.collidepoint(pos) and PLAYER_DATA["rubies"] >= 10:
                             PLAYER_DATA["rubies"] -= 10
                             gacha_result = draw_gacha_animation(1)
@@ -172,19 +193,27 @@ def main_lobby():
 
                     elif active_tab == "UPGRADE":
                         for idx, u_id in enumerate(PLAYER_DATA["inventory"]):
-                            up_btn = pygame.Rect(660, 175 + idx * 75, 160, 40)
-                            if up_btn.collidepoint(pos) and PLAYER_DATA["coins"] >= 200:
-                                PLAYER_DATA["coins"] -= 200
-                                ALL_UNITS_DATABASE[u_id]["damage"] += 2
+                            # คำนวณตำแหน่งปุ่มอัปเกรดโดยรวม Scroll Offset เข้าไปด้วยเพื่อให้กดตรงกับตำแหน่งที่แสดงผล
+                            y_pos = pop_rect.top + 100 + (idx * 75) + upgrade_scroll_offset
+                            up_btn = pygame.Rect(pop_rect.right - 220, y_pos - 5, 160, 40)
+                            
+                            # ตรวจสอบการคลิกเฉพาะเมื่อปุ่มอยู่ในขอบเขตการแสดงผล
+                            content_area = pygame.Rect(pop_rect.left + 20, pop_rect.top + 90, pop_rect.width - 40, 350)
+                            if content_area.collidepoint(up_btn.center) and up_btn.collidepoint(pos):
+                                if PLAYER_DATA["coins"] >= 200:
+                                    PLAYER_DATA["coins"] -= 200
+                                    ALL_UNITS_DATABASE[u_id]["damage"] += 2
+                                    ALL_UNITS_DATABASE[u_id]["hp"] += 20
                 else:
                     if stage_btn_rect.collidepoint(pos):
                         run_stage_select()
                     for rect, item_id in nav_buttons:
                         if rect.collidepoint(pos):
                             if item_id == "TEAM":
-                                run_team_screen()      # เปลี่ยนไปหน้า team screen
+                                run_team_screen()
                             else:
                                 active_tab = item_id
+                                upgrade_scroll_offset = 0 # รีเซ็ตค่า Scroll ทุกครั้งที่เปิดแท็บใหม่
 
         pygame.display.flip()
         clock.tick(60)

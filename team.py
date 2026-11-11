@@ -1,9 +1,10 @@
 import pygame
 import math
+import sys
 from game_data import *
 
 # ==========================================
-# Team Screen (หน้าจัดทีมแบบเต็มจอ ลากการ์ดไปวางบนแท่น)
+# Team Screen (หน้าจัดทีมแบบเลื่อนซ้าย-ขวา พร้อมระบบ Scroll)
 # ==========================================
 _FIG_CACHE = {}
 
@@ -92,6 +93,7 @@ def run_team_screen():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return
             elif event.type == pygame.MOUSEWHEEL:
+                # เปลี่ยนให้ MOUSEWHEEL เลื่อนไปทางซ้าย-ขวาแทน
                 scroll -= event.y * 40
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if back_rect.collidepoint(event.pos):
@@ -114,7 +116,9 @@ def run_team_screen():
                         break
                 drag = None                 # ปล่อยนอกแท่น = ยกเลิก
 
-        max_scroll = max(0, 24 + len(PLAYER_DATA["inventory"]) * (CARD_W + GAP) - WIDTH)
+        # คำนวณขอบเขตการเลื่อนซ้าย-ขวาไม่ให้ล้นหายไปไกลเกินจริง
+        total_content_width = 24 + len(PLAYER_DATA["inventory"]) * (CARD_W + GAP)
+        max_scroll = max(0, total_content_width - WIDTH + 24)
         scroll = max(0, min(scroll, max_scroll))
 
         # ----- พื้นหลังอิฐ -----
@@ -150,9 +154,14 @@ def run_team_screen():
         total = sum(ALL_UNITS_DATABASE[u]["damage"] for u in PLAYER_DATA["loadout"] if u is not None)
         draw_text(f"พลังโจมตีรวม: {total}", WIDTH - 20 - 200, 14, FONT, YELLOW_GOLD)
 
-        # ----- แถบการ์ดตัวละครในคลัง -----
+        # ----- แถบการ์ดตัวละครในคลัง (แนวนอน) -----
         pygame.draw.rect(screen, (95, 65, 45), (0, CARD_Y - 20, WIDTH, HEIGHT - CARD_Y + 20))
         pygame.draw.line(screen, ORANGE_BORDER, (0, CARD_Y - 20), (WIDTH, CARD_Y - 20), 3)
+
+        # ใช้ Clipping พื้นแถบการ์ดด้านล่างเพื่อไม่ให้ล้นออกนอกจอซ้ายขวาเวลาเลื่อน
+        clip_area = pygame.Rect(0, CARD_Y - 20, WIDTH, HEIGHT - (CARD_Y - 20))
+        screen.set_clip(clip_area)
+
         for idx, u_id in enumerate(PLAYER_DATA["inventory"]):
             u = ALL_UNITS_DATABASE[u_id]
             rect = card_rect(idx)
@@ -177,7 +186,9 @@ def run_team_screen():
                 pygame.draw.rect(screen, (60, 140, 90), (rect.x + 6, rect.bottom - 26, tag.get_width() + 12, 20), border_radius=6)
                 screen.blit(tag, (rect.x + 12, rect.bottom - 25))
 
-        draw_text("กดค้างที่การ์ดแล้วลากไปวางบนแท่น  |  ลากระหว่างแท่นเพื่อสลับ  |  ESC หรือ ‹ กลับ เพื่อออก",
+        screen.set_clip(None) # ยกเลิก Clipping
+
+        draw_text("กดค้างที่การ์ดแล้วลากไปวางบนแท่น  |  ลากระหว่างแท่นเพื่อสลับ  |  Scroll เมาส์เลื่อนซ้าย-ขวา  |  ESC หรือ ‹ กลับ เพื่อออก",
                   20, HEIGHT - 30, SMALL, (255, 235, 200))
 
         # ----- ตัวละครที่ติดเมาส์ (วาดบนสุด) -----
