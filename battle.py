@@ -141,13 +141,15 @@ def run_battle_game(stage_data):
     upgrade_rect = pygame.Rect(650, 515, 170, 68)
     menu_rect = pygame.Rect(400, 380, 200, 60)
 
+    # ปุ่มและสถานะ Pause
+    paused = False
+    pause_rect = pygame.Rect(WIDTH - 125, 20, 100, 42)
+    resume_rect = pygame.Rect(WIDTH // 2 - 110, 270, 220, 48)
+    restart_rect = pygame.Rect(WIDTH // 2 - 110, 330, 220, 48)
+    pause_home_rect = pygame.Rect(WIDTH // 2 - 110, 390, 220, 48)
+
     while True:
         dt = min(clock.tick(60) / 1000.0, 0.05)
-
-        # อัปเดตเวลา Cooldown ของปุ่มตัวละคร
-        for i in range(3):
-            if cooldown_timers[i] > 0:
-                cooldown_timers[i] -= dt
 
         # จัดการ Event การคลิกเมาส์และปิดเกม
         for event in pygame.event.get():
@@ -156,10 +158,21 @@ def run_battle_game(stage_data):
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = event.pos
-                if game_over: #เกมจบ กดกลับหน้าหลัก
+                if game_over: # เกมจบ กดกลับหน้าหลัก
                     if menu_rect.collidepoint(pos):
                         return
-                else: 
+                elif paused:
+                    # ตัวเลือกในหน้า Pause
+                    if resume_rect.collidepoint(pos):
+                        paused = False
+                    elif restart_rect.collidepoint(pos):
+                        run_battle_game(stage_data)
+                        return
+                    elif pause_home_rect.collidepoint(pos):
+                        return
+                elif pause_rect.collidepoint(pos):
+                    paused = True
+                else:
                     # ตรวจสอบการกดปุ่มปล่อยตัวละครออกไปสู้
                     for i, rect in enumerate(unit_buttons):
                         u_id = team_units[i]
@@ -177,7 +190,12 @@ def run_battle_game(stage_data):
                             minerals -= cost
                             production_level += 1
 
-        if not game_over:
+        if not game_over and not paused:
+            # อัปเดตเวลา Cooldown ของปุ่มตัวละคร (หยุดนับระหว่าง Pause)
+            for i in range(3):
+                if cooldown_timers[i] > 0:
+                    cooldown_timers[i] = max(0, cooldown_timers[i] - dt)
+
             # ระบบผลิตแร่อัตโนมัติ
             production_interval = max(0.65, 2.5 / (1 + (production_level - 1) * 0.65))
             minerals += (25 / production_interval) * dt
@@ -260,6 +278,12 @@ def run_battle_game(stage_data):
         pygame.draw.rect(screen, DARK_PANEL, (0, 490, WIDTH, 130))
         draw_text(f"แร่: {int(minerals)}", 450, 20, BIG, YELLOW_GOLD)
 
+        # วาดปุ่ม Pause
+        if not game_over:
+            pygame.draw.rect(screen, ORANGE_BORDER if paused else BLUE, pause_rect, border_radius=8)
+            draw_text("PAUSED" if paused else "|| Pause",
+                      pause_rect.centerx, pause_rect.centery, FONT, WHITE, center=True)
+
         # วาดปุ่มตัวละครพร้อมจัดการสถานะติดคูลดาวน์หรือแร่ไม่พอ
         for i, rect in enumerate(unit_buttons):
             u_id = team_units[i]
@@ -288,6 +312,26 @@ def run_battle_game(stage_data):
         pygame.draw.rect(screen, YELLOW_GOLD, upgrade_rect, border_radius=9)
         draw_text(f"อัปเกรดแร่ (Lv.{production_level})", upgrade_rect.centerx, upgrade_rect.centery - 10, FONT, BLACK, center=True)
         draw_text(f"(ใช้ {upgrade_cost} แร่)", upgrade_rect.centerx, upgrade_rect.centery + 12, SMALL, DARK_PANEL, center=True)
+
+        # หน้าต่าง Pause
+        if paused and not game_over:
+            overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 185))
+            screen.blit(overlay, (0, 0))
+
+            draw_text("PAUSE", WIDTH // 2, 205, BIG, YELLOW_GOLD, center=True)
+
+            pygame.draw.rect(screen, GREEN, resume_rect, border_radius=10)
+            draw_text("เล่นต่อ", resume_rect.centerx, resume_rect.centery,
+                      FONT, WHITE, center=True)
+
+            pygame.draw.rect(screen, ORANGE_BORDER, restart_rect, border_radius=10)
+            draw_text("เริ่มเกมใหม่", restart_rect.centerx, restart_rect.centery,
+                      FONT, WHITE, center=True)
+
+            pygame.draw.rect(screen, RED_TAG, pause_home_rect, border_radius=10)
+            draw_text("กลับหน้าหลัก", pause_home_rect.centerx, pause_home_rect.centery,
+                      FONT, WHITE, center=True)
 
         # หน้าต่างแสดงผลเมื่อจบเกม (ชนะ / แพ้)
         if game_over:

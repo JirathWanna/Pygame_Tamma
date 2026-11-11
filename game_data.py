@@ -34,7 +34,7 @@ PURPLE       = (150, 80, 220)
 # --- Global Player Economy Data ---
 PLAYER_DATA = {
     "coins": 10000000,
-    "rubies": 100,
+    "rubies": 1000,
     "inventory": [0, 1, 2],       # ID ตัวละครที่มีในคลัง
     "loadout": [0, 1, 2]          # ID ตัวละครที่จัดลงทีม (3 ช่อง)
 }
@@ -49,7 +49,8 @@ ALL_UNITS_DATABASE = [
     {"id": 5, "name": "สไลม์", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 50, "speed": 70},
     {"id": 6, "name": "หมาป่า", "stars": 3, "range": 190, "damage": 30, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 70, "speed": 50},
     {"id": 7, "name": "ผีโคกะโหลก", "stars": 3, "range": 500, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 30, "speed": 70},
-    {"id": 7, "name": "กระสือ", "stars": 3, "range": 58, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 300, "speed": 150}
+    {"id": 8, "name": "กระสือ", "stars": 3, "range": 58, "damage": 40, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 300, "speed": 150},
+    {"id": 9, "name": "โคนัน", "stars": 2, "range": 80, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 500, "speed": 70}
 ]
 
 
