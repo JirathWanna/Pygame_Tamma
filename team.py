@@ -144,7 +144,7 @@ def run_team_screen():
                 draw_unit_figure(screen, u_id, cx, cy + 10)
             draw_star_row(cx, cy + 38, u["stars"], 6)
             draw_text(u["name"], cx, cy + 82, FONT, BLACK, center=True)
-            draw_text(f"ATK {u['damage']} HP {u['hp']}", cx, cy + 104, SMALL, (70, 50, 40), center=True)
+            draw_text(f"ดาเมจ {u['damage']} เลือด {u['hp']}", cx, cy + 104, SMALL, (70, 50, 40), center=True)
 
         # ----- แถบด้านบน -----
         pygame.draw.rect(screen, (60, 50, 80), (0, 0, WIDTH, 52))
@@ -174,8 +174,8 @@ def run_team_screen():
             draw_star_row(rect.centerx, rect.y + 16, u["stars"], 6)
             draw_unit_figure(screen, u_id, rect.x + 45, rect.y + 82, 0.65)
             draw_text(u["name"], rect.x + 88, rect.y + 32, FONT, fg)
-            draw_text(f"ATK {u['damage']}", rect.x + 88, rect.y + 60, SMALL, fg)
-            draw_text(f"ระยะ {u['range']}", rect.x + 88, rect.y + 80, SMALL, fg)
+            draw_text(f"ดาเมจ {u['damage']}", rect.x + 88, rect.y + 60, SMALL, fg)
+            draw_text(f"เลือด {u['hp']}", rect.x + 88, rect.y + 80, SMALL, fg)
             draw_text(f"ใช้ {u['cost']} แร่", rect.x + 88, rect.y + 100, SMALL, fg)
             if drag and drag["src"] == ("card", u_id):
                 dim = pygame.Surface(rect.size, pygame.SRCALPHA)
