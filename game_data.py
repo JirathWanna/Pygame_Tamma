@@ -1,18 +1,15 @@
 import pygame
-import random
-import math
-import sys
 import os
 
 
-# --- Pygame Setup ---
+
 pygame.init()
 WIDTH, HEIGHT = 1000, 620
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("LINE Rangers - Full Feature Edition")
+pygame.display.set_caption("Tamma")
 clock = pygame.time.Clock()
 
-# --- Fonts & Colors ---
+
 FONT = pygame.font.SysFont("Tahoma", 18, bold=True)
 SMALL = pygame.font.SysFont("Tahoma", 13, bold=True)
 BIG = pygame.font.SysFont("Tahoma", 28, bold=True)
@@ -31,20 +28,20 @@ SKY          = (194, 226, 245)
 GRASS        = (105, 183, 100)
 PURPLE       = (150, 80, 220)
 
-# --- Global Player Economy Data ---
+# --- Global Player Data ---
 PLAYER_DATA = {
-    "coins": 10000000,
-    "rubies": 1000,
+    "coins": 100,
+    "rubies": 10,
     "inventory": [0, 1, 2],       # ID ตัวละครที่มีในคลัง
     "loadout": [0, 1, 2]          # ID ตัวละครที่จัดลงทีม (3 ช่อง)
 }
 
-# --- Database ตัวละคร ( Template รองรับการเพิ่มตัวละครภายหลัง ) ---
+# --- ตัวละคร ---
 ALL_UNITS_DATABASE = [
     {"id": 0, "name": "อัศวินดำ", "stars": 1, "range": 58, "damage": 18, "cooldown": 5.0, "cost": 50, "color": (153, 76, 0), "hp": 200, "speed": 60},
-    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 400, "damage": 30, "cooldown": 3.0, "cost": 60, "color": (153, 76, 0), "hp": 100, "speed": 50},
-    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 60, "cooldown": 10.0, "cost": 85, "color": (153, 76, 0), "hp": 100, "speed": 30},
-    {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 2, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 100, "speed": 150},
+    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 400, "damage": 5, "cooldown": 0.5, "cost": 60, "color": (153, 76, 0), "hp": 100, "speed": 50},
+    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 60, "cooldown": 10.0, "cost": 100, "color": (153, 76, 0), "hp": 100, "speed": 30},
+    {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 4, "range": 58, "damage": 24, "cooldown": 0.5, "cost": 85, "color": (145, 100, 220), "hp": 100, "speed": 1500},
     {"id": 4, "name": "ช้างเอราวัณ", "stars": 2, "range": 80, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 500, "speed": 70},
     {"id": 5, "name": "สไลม์", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 50, "speed": 70},
     {"id": 6, "name": "หมาป่า", "stars": 3, "range": 190, "damage": 30, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 70, "speed": 50},
@@ -70,31 +67,30 @@ BOTTOM_NAV_ITEMS = [
 ASSETS = {}
 
 def load_image(filename, size=None):
-    path = os.path.join("assets", filename)
+    path = os.path.join("assets", filename) #path ของโฟลเดอร์ assets 
     if os.path.exists(path):
         try:
-            img = pygame.image.load(path).convert_alpha()
+            img = pygame.image.load(path).convert_alpha() #โหลดรูป
             if size:
-                img = pygame.transform.smoothscale(img, size)
+                img = pygame.transform.smoothscale(img, size) #ปรับขนาด
             return img
         except Exception as e:
             print(f"Failed to load image {filename}: {e}")
     return None
 
-def init_assets():
-    ASSETS["bg_lobby"] = load_image("bg_lobby.png", (WIDTH, HEIGHT))
-    ASSETS["bg_grass"] = load_image("bg_grass.png", (WIDTH, HEIGHT))
-    ASSETS["bg_desert"] = load_image("bg_desert.png", (WIDTH, HEIGHT))
-    ASSETS["bg_volcano"] = load_image("bg_volcano.png", (WIDTH, HEIGHT))
-    ASSETS["player_base"] = load_image("player_base.png", (150, 150))
-    ASSETS["enemy_base"] = load_image("enemy_base.png", (150, 150))
-    ASSETS["btn_stage"] = load_image("btn_stage.png", (240, 130))
-    for i in range(len(ALL_UNITS_DATABASE)):
-        ASSETS[f"unit_{i}"] = load_image(f"unit_{i}.png", (100, 100))
 
-init_assets()
+ASSETS["bg_lobby"] = load_image("bg_lobby.png", (WIDTH, HEIGHT))
+ASSETS["bg_grass"] = load_image("bg_grass.png", (WIDTH, HEIGHT))
+ASSETS["bg_desert"] = load_image("bg_desert.png", (WIDTH, HEIGHT))
+ASSETS["bg_volcano"] = load_image("bg_volcano.png", (WIDTH, HEIGHT))
+ASSETS["player_base"] = load_image("player_base.png", (150, 150))
+ASSETS["enemy_base"] = load_image("enemy_base.png", (150, 150))
+ASSETS["btn_stage"] = load_image("btn_stage.png", (240, 130))
+for i in range(len(ALL_UNITS_DATABASE)):
+    ASSETS[f"unit_{i}"] = load_image(f"unit_{i}.png", (100, 100))
 
-# --- Helper Functions ---
+
+# --- วาด text ---
 def draw_text(text, x, y, font=FONT, color=WHITE, center=False):
     surf = font.render(text, True, color)
     rect = surf.get_rect()
@@ -104,6 +100,7 @@ def draw_text(text, x, y, font=FONT, color=WHITE, center=False):
         rect.topleft = (x, y)
     screen.blit(surf, rect)
 
+# --- วาด ค่าเงิน รูบี้ ---
 def draw_top_bar():
     items = [
         (f"Ruby : {PLAYER_DATA['rubies']}", (680, 25), (130, 36)),
@@ -115,6 +112,7 @@ def draw_top_bar():
         pygame.draw.rect(screen, YELLOW_GOLD, rect, 2, border_radius=15)
         draw_text(text, rect.centerx, rect.centery, FONT, WHITE, center=True)
 
+# --- วาดเมนูข้างล่าง ---
 def draw_bottom_navigation(active_tab):
     nav_height = 80
     panel_rect = pygame.Rect(0, HEIGHT - nav_height, WIDTH, nav_height)

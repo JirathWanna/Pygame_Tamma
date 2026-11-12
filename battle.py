@@ -60,7 +60,7 @@ class Unit:
     def draw(self):
         unit_img = ASSETS.get(f"unit_{self.unit_id}")
         
-        # วาดภาพตัวละครหรือรูปทรงสำรองถ้าไม่มีรูปภาพ
+        # วาดภาพตัวละครหรือสำรองถ้าไม่มีรูป
         if unit_img:
             img = unit_img if self.team == "player" else pygame.transform.flip(unit_img, True, False)
             screen.blit(img, (int(self.x - 25), int(self.y - 35)))
@@ -126,7 +126,7 @@ def run_battle_game(stage_data):
     player_hp, enemy_hp = 500, stage_data["enemy_hp"] #เลือดป้อมเด้อ
     player_max_hp, enemy_max_hp = 500, stage_data["enemy_hp"]
     minerals, production_level = 150, 1
-    max_minerals = 500  # <--- กำหนดขีดจำกัดแร่เริ่มต้น
+    max_minerals = 150  # กำหนดขีดจำกัดแร่เริ่มต้น
     enemy_spawn_timer = stage_data["spawn_timer"]
     
     units = []
@@ -177,7 +177,7 @@ def run_battle_game(stage_data):
                     # ตรวจสอบการกดปุ่มปล่อยตัวละครออกไปสู้
                     for i, rect in enumerate(unit_buttons):
                         u_id = team_units[i]
-                        if u_id is not None and rect.collidepoint(pos):
+                        if rect.collidepoint(pos):
                             u_data = ALL_UNITS_DATABASE[u_id]
                             if minerals >= u_data["cost"] and cooldown_timers[i] <= 0: 
                                 minerals -= u_data["cost"]
@@ -191,6 +191,76 @@ def run_battle_game(stage_data):
                             minerals -= cost
                             production_level += 1
                             max_minerals += 100  # <--- เพิ่มขีดจำกัดแร่สูงสุดทีละ 100 ทุกครั้งที่อัปเกรด
+
+        # วาดพื้นหลังฉากเกม
+        bg_img = ASSETS.get(stage_data["bg_key"])
+        if bg_img:
+            screen.blit(bg_img, (0, 0))
+        else:
+            screen.fill(SKY)
+            pygame.draw.rect(screen, GRASS, (0, 420, WIDTH, 100))
+        
+        # วาดฐานทัพ, ยูนิต และกระสุน
+        screen.blit(ASSETS["player_base"], (player_base - 60, 300))
+        screen.blit(ASSETS["enemy_base"], (enemy_base - 60, 300))
+        
+        pygame.draw.rect(screen, (65, 65, 65), (int(player_base - 21), int(275), 40, 5), border_radius=2)
+        hpp = max(0, int(38 * player_hp / player_max_hp))
+        pygame.draw.rect(screen, GREEN , (int(player_base-20), int(276), hpp, 3), border_radius=2)
+        
+        pygame.draw.rect(screen, (65, 65, 65), (int(enemy_base - 21), int(275), 40, 5), border_radius=2)
+        hpe = max(0, int(38 * enemy_hp / enemy_max_hp))
+        pygame.draw.rect(screen, RED , (int(enemy_base-20), int(276), hpe, 3), border_radius=2)
+
+        # วาด UI แผงควบคุมด้านล่าง (แร่, ปุ่มยูนิต, ปุ่มอัปเกรด)
+        pygame.draw.rect(screen, DARK_PANEL, (0, 490, WIDTH, 130))
+                
+        for unit in units: 
+            unit.draw()
+        for proj in projectiles: 
+            proj.draw()
+        
+        
+                
+        # แสดงผลแร่ปัจจุบัน / ขีดจำกัดสูงสุด เช่น 126 / 500
+        draw_text(f"แร่: {int(minerals)} / {max_minerals}", 450, 20, BIG, YELLOW_GOLD)
+
+        
+        # วาดปุ่มตัวละครพร้อมจัดการสถานะติดคูลดาวน์หรือแร่ไม่พอ
+        for i, rect in enumerate(unit_buttons):
+            u_id = team_units[i]
+            if u_id is not None:
+                data = ALL_UNITS_DATABASE[u_id]
+                pygame.draw.rect(screen, data["color"], rect, border_radius=9)
+                pygame.draw.rect(screen, (255, 255, 255) if ALL_UNITS_DATABASE[u_id]["stars"] == 1 else YELLOW_GOLD, rect, width=2, border_radius=9)
+        
+                on_cooldown = cooldown_timers[i] > 0
+                not_enough_minerals = minerals < data["cost"]
+        
+                # ใส่เอฟเฟกต์สีดำทับปุ่มถ้าไม่สามารถกดได้
+                if on_cooldown or not_enough_minerals:
+                    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+                    overlay.fill((0, 0, 0, 150))
+                    screen.blit(overlay, rect.topleft)
+        
+                if on_cooldown:
+                    draw_text(f"{cooldown_timers[i]:.1f}s", rect.centerx, rect.centery, FONT, WHITE, center=True)
+        
+                draw_text(f"{data['name']}", rect.centerx, rect.centery - 10, FONT, WHITE, center=True)
+                draw_text(f"ใช้ {data['cost']} แร่", rect.centerx, rect.centery + 12, SMALL, YELLOW_GOLD, center=True)
+        
+        # วาดปุ่มอัปเกรดแร่
+        upgrade_cost = 75 * production_level
+        pygame.draw.rect(screen, YELLOW_GOLD, upgrade_rect, border_radius=9)
+        draw_text(f"อัปเกรดแร่ (Lv.{production_level})", upgrade_rect.centerx, upgrade_rect.centery - 10, FONT, BLACK, center=True)
+        draw_text(f"(ใช้ {upgrade_cost} แร่)", upgrade_rect.centerx, upgrade_rect.centery + 12, SMALL, DARK_PANEL, center=True)
+
+
+        # วาดปุ่ม Pause
+        if not game_over:
+            pygame.draw.rect(screen, ORANGE_BORDER if paused else BLUE, pause_rect, border_radius=8)
+            draw_text("PAUSED" if paused else "|| Pause",
+            pause_rect.centerx, pause_rect.centery, FONT, WHITE, center=True)
 
         if not game_over and not paused:
             # อัปเดตเวลา Cooldown ของปุ่มตัวละคร (หยุดนับระหว่าง Pause)
@@ -251,72 +321,7 @@ def run_battle_game(stage_data):
             elif player_hp <= 0:
                 game_over = "LOSE"
 
-        # วาดพื้นหลังฉากเกม
-        bg_img = ASSETS.get(stage_data["bg_key"])
-        if bg_img:
-            screen.blit(bg_img, (0, 0))
-        else:
-            screen.fill(SKY)
-            pygame.draw.rect(screen, GRASS, (0, 420, WIDTH, 100))
-
-        # วาดฐานทัพ, ยูนิต และกระสุน
-        screen.blit(ASSETS["player_base"], (player_base - 60, 300))
-        screen.blit(ASSETS["enemy_base"], (enemy_base - 60, 300))
-
-        pygame.draw.rect(screen, (65, 65, 65), (int(player_base - 21), int(275), 40, 5), border_radius=2)
-        hpp = max(0, int(38 * player_hp / player_max_hp))
-        pygame.draw.rect(screen, GREEN , (int(player_base-20), int(276), hpp, 3), border_radius=2)
-
-        pygame.draw.rect(screen, (65, 65, 65), (int(enemy_base - 21), int(275), 40, 5), border_radius=2)
-        hpe = max(0, int(38 * enemy_hp / enemy_max_hp))
-        pygame.draw.rect(screen, RED , (int(enemy_base-20), int(276), hpe, 3), border_radius=2)
         
-        for unit in units: 
-            unit.draw()
-        for proj in projectiles: 
-            proj.draw()
-
-        # วาด UI แผงควบคุมด้านล่าง (แร่, ปุ่มยูนิต, ปุ่มอัปเกรด)
-        pygame.draw.rect(screen, DARK_PANEL, (0, 490, WIDTH, 130))
-        
-        # แสดงผลแร่ปัจจุบัน / ขีดจำกัดสูงสุด เช่น 126 / 500
-        draw_text(f"แร่: {int(minerals)} / {max_minerals}", 450, 20, BIG, YELLOW_GOLD)
-
-        # วาดปุ่ม Pause
-        if not game_over:
-            pygame.draw.rect(screen, ORANGE_BORDER if paused else BLUE, pause_rect, border_radius=8)
-            draw_text("PAUSED" if paused else "|| Pause",
-                      pause_rect.centerx, pause_rect.centery, FONT, WHITE, center=True)
-
-        # วาดปุ่มตัวละครพร้อมจัดการสถานะติดคูลดาวน์หรือแร่ไม่พอ
-        for i, rect in enumerate(unit_buttons):
-            u_id = team_units[i]
-            if u_id is not None:
-                data = ALL_UNITS_DATABASE[u_id]
-                pygame.draw.rect(screen, data["color"], rect, border_radius=9)
-                pygame.draw.rect(screen, (255, 255, 255) if ALL_UNITS_DATABASE[u_id]["stars"] == 1 else YELLOW_GOLD, rect, width=2, border_radius=9)
-
-                on_cooldown = cooldown_timers[i] > 0
-                not_enough_minerals = minerals < data["cost"]
-
-                # ใส่เอฟเฟกต์สีดำทับปุ่มถ้าไม่สามารถกดได้
-                if on_cooldown or not_enough_minerals:
-                    overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-                    overlay.fill((0, 0, 0, 150))
-                    screen.blit(overlay, rect.topleft)
-
-                if on_cooldown:
-                    draw_text(f"{cooldown_timers[i]:.1f}s", rect.centerx, rect.centery, FONT, WHITE, center=True)
-
-                draw_text(f"{data['name']}", rect.centerx, rect.centery - 10, FONT, WHITE, center=True)
-                draw_text(f"ใช้ {data['cost']} แร่", rect.centerx, rect.centery + 12, SMALL, YELLOW_GOLD, center=True)
-
-        # วาดปุ่มอัปเกรดแร่
-        upgrade_cost = 75 * production_level
-        pygame.draw.rect(screen, YELLOW_GOLD, upgrade_rect, border_radius=9)
-        draw_text(f"อัปเกรดแร่ (Lv.{production_level})", upgrade_rect.centerx, upgrade_rect.centery - 10, FONT, BLACK, center=True)
-        draw_text(f"(ใช้ {upgrade_cost} แร่)", upgrade_rect.centerx, upgrade_rect.centery + 12, SMALL, DARK_PANEL, center=True)
-
         # หน้าต่าง Pause
         if paused and not game_over:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)

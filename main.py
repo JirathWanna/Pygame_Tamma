@@ -19,8 +19,11 @@ def draw_gacha_animation(pull_count):
         rand = random.random()
         if rand < 0.70:
             chosen = random.choice([u for u in ALL_UNITS_DATABASE if u["stars"] == 1])
-        else:
+        elif 0.70 <= rand < 0.90:
             chosen = random.choice([u for u in ALL_UNITS_DATABASE if u["stars"] == 2])
+        else:
+            chosen = random.choice([u for u in ALL_UNITS_DATABASE if u["stars"] == 4])
+        
         results.append(chosen) 
         if chosen["id"] not in PLAYER_DATA["inventory"]: #ถ้าตัวไม่อยู่ใน Inventory ให้เพิ่มไป
             PLAYER_DATA["inventory"].append(chosen["id"])
@@ -97,7 +100,7 @@ def main_lobby():
             # --- TAB 2: กาชา (GACHA) ---
             if active_tab == "GACHA":
                 draw_text("สุ่มอัญเชิญเรนเจอร์ (Gacha)", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
-                draw_text("โอกาสได้รับ: 1 ดาว (70%) | 2 ดาว (30%)", pop_rect.centerx, pop_rect.top + 75, FONT, (80, 80, 80), center=True)
+                draw_text("โอกาสได้รับ: 1 ดาว (70%) | 2 ดาว (20%) | 4 ดาว (10%)", pop_rect.centerx, pop_rect.top + 75, FONT, (80, 80, 80), center=True)
 
                 gacha_1_btn = pygame.Rect(pop_rect.centerx - 220, pop_rect.top + 200, 180, 70)
                 pygame.draw.rect(screen, GREEN if PLAYER_DATA["rubies"] >= 10 else (180, 180, 180), gacha_1_btn, border_radius=12)
