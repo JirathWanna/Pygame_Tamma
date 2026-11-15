@@ -39,8 +39,8 @@ PLAYER_DATA = {
 # --- ตัวละคร ---
 ALL_UNITS_DATABASE = [
     {"id": 0, "name": "อัศวินดำ", "stars": 1, "range": 58, "damage": 18, "cooldown": 5.0, "cost": 50, "color": (153, 76, 0), "hp": 200, "speed": 60},
-    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 400, "damage": 5, "cooldown": 0.5, "cost": 60, "color": (153, 76, 0), "hp": 100, "speed": 50},
-    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 60, "cooldown": 10.0, "cost": 100, "color": (153, 76, 0), "hp": 100, "speed": 30},
+    {"id": 1, "name": "ไก่ทอดน่องนักเลง", "stars": 1, "range": 400, "damage": 5, "cooldown": 1.0, "cost": 60, "color": (153, 76, 0), "hp": 100, "speed": 50},
+    {"id": 2, "name": "พลปืนเล็ก ชุดยิง ก.", "stars": 2, "range": 600, "damage": 40, "cooldown": 10.0, "cost": 100, "color": (153, 76, 0), "hp": 100, "speed": 30},
     {"id": 3, "name": "ม้าขาวจั้วะ", "stars": 4, "range": 58, "damage": 24, "cooldown": 0.5, "cost": 85, "color": (145, 100, 220), "hp": 100, "speed": 1500},
     {"id": 4, "name": "ช้างเอราวัณ", "stars": 2, "range": 80, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 500, "speed": 70},
     {"id": 5, "name": "สไลม์", "stars": 3, "range": 58, "damage": 24, "cooldown": 4.5, "cost": 85, "color": (145, 100, 220), "hp": 50, "speed": 70},

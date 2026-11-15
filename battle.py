@@ -42,27 +42,39 @@ class Projectile:
 
 
 # =====================================================================
-# UNIT CLASS (คลาสตัวละครยูนิตในเกม)
+# UNIT CLASSES 
 # =====================================================================
 class Unit:
-    def __init__(self, x, team, unit_id):
+    """คลาสแม่: เก็บคุณสมบัติและพฤติกรรมพื้นฐานที่ทุกยูนิตใช้ร่วมกัน"""
+
+    team = None
+    direction = 0
+    hp_color = WHITE
+    projectile_color = WHITE
+    flip_image = False
+
+    def __init__(self, x, unit_id):
         self.x = float(x)
-        self.team = team
         self.unit_id = unit_id
         self.data = ALL_UNITS_DATABASE[unit_id]
-        self.hp = self.data["hp"] 
+
+        self.hp = self.data["hp"]
         self.max_hp = self.hp
         self.attack_timer = random.uniform(0, 0.4)
-        self.speed = self.data["speed"] 
+        self.speed = self.data["speed"]
         self.y = 390 + random.randint(-12, 12)
         self.alive = True
 
+    def move(self, dt):
+        """เคลื่อนที่ตามทิศทางที่คลาสลูกกำหนด"""
+        self.x += self.speed * dt * self.direction
+
     def draw(self):
         unit_img = ASSETS.get(f"unit_{self.unit_id}")
-        
-        # วาดภาพตัวละครหรือสำรองถ้าไม่มีรูป
+
+        # วาดภาพตัวละคร หรือใช้รูปทรงสำรองถ้าไม่มีรูป
         if unit_img:
-            img = unit_img if self.team == "player" else pygame.transform.flip(unit_img, True, False)
+            img = pygame.transform.flip(unit_img, True, False) if self.flip_image else unit_img
             screen.blit(img, (int(self.x - 25), int(self.y - 35)))
         else:
             color = self.data["color"] if self.team == "player" else (205, 75, 83)
@@ -72,289 +84,285 @@ class Unit:
         # วาดหลอดเลือด (HP Bar) ของยูนิต
         pygame.draw.rect(screen, (65, 65, 65), (int(self.x - 1), int(self.y - 42), 40, 5), border_radius=2)
         hpw = max(0, int(38 * self.hp / self.max_hp))
-        pygame.draw.rect(screen, GREEN if self.team == "player" else RED, (int(self.x), int(self.y - 41), hpw, 3), border_radius=2)
+        pygame.draw.rect(screen, self.hp_color, (int(self.x), int(self.y - 41), hpw, 3), border_radius=2)
 
+class PlayerUnit(Unit):
+    """คลาสลูกของยูนิตฝ่ายผู้เล่น"""
+    team = "player"
+    direction = 1
+    hp_color = GREEN
+    projectile_color = (0, 200, 255)
+    flip_image = False
 
-# =====================================================================
-# STAGE SELECT FUNCTION (หน้าจอเลือกด่าน)
-# =====================================================================
-def run_stage_select():
-    while True:
-        screen.fill((40, 45, 60))
-        draw_text("เลือกด่านที่ต้องการเล่น", WIDTH // 2, 60, BIG, YELLOW_GOLD, center=True)
-
-        stage_rects = []
-        for i, stage in enumerate(STAGES):
-            rect = pygame.Rect(200, 130 + i * 120, 600, 95)
-            pygame.draw.rect(screen, WHITE, rect, border_radius=12)
-            pygame.draw.rect(screen, ORANGE_BORDER, rect, 3, border_radius=12)
-            
-            draw_text(stage["name"], rect.x + 20, rect.y + 18, FONT, BLACK)
-            draw_text(f"รางวัล: gold+{stage['gold_reward']} | ruby+{stage['ruby_reward']}", rect.x + 20, rect.y + 55, SMALL, (80, 140, 60))
-            
-            play_btn = pygame.Rect(rect.right - 140, rect.centery - 25, 120, 50)
-            pygame.draw.rect(screen, GREEN, play_btn, border_radius=10)
-            draw_text("Play", play_btn.centerx, play_btn.centery, FONT, WHITE, center=True)
-            
-            stage_rects.append((play_btn, stage))
-
-        back_rect = pygame.Rect(50, 40, 120, 45)
-        pygame.draw.rect(screen, RED_TAG, back_rect, border_radius=10)
-        draw_text("‹ กลับ", back_rect.centerx, back_rect.centery, FONT, WHITE, center=True)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if back_rect.collidepoint(event.pos):
-                    return
-                for btn, stage in stage_rects:
-                    if btn.collidepoint(event.pos):
-                        run_battle_game(stage)
-
-        pygame.display.flip()
-        clock.tick(60)
-
+class EnemyUnit(Unit):
+    """คลาสลูกของยูนิตฝ่ายศัตรู"""
+    team = "enemy"
+    direction = -1
+    hp_color = RED
+    projectile_color = (255, 100, 100)
+    flip_image = True
 
 # =====================================================================
-# MAIN BATTLE GAME FUNCTION (ระบบเกมหลักในการต่อสู้)
+# GAME CLASS 
 # =====================================================================
-def run_battle_game(stage_data):
-    # กำหนดค่าเริ่มต้นของเกม
-    player_base, enemy_base = 70, WIDTH - 70
-    player_hp, enemy_hp = 500, stage_data["enemy_hp"] #เลือดป้อมเด้อ
-    player_max_hp, enemy_max_hp = 500, stage_data["enemy_hp"]
-    minerals, production_level = 150, 1
-    max_minerals = 150  # กำหนดขีดจำกัดแร่เริ่มต้น
-    enemy_spawn_timer = stage_data["spawn_timer"]
-    
-    units = []
-    projectiles = []
-    game_over = None
-    reward_given = False
+class Game:
+    def __init__(self, stage_data):
+        self.stage_data = stage_data
+        
+        # ตำแหน่งและสถานะป้อม
+        self.player_base = 70
+        self.enemy_base = WIDTH - 70
+        self.player_hp = 500
+        self.player_max_hp = 500
+        self.enemy_hp = stage_data["enemy_hp"]
+        self.enemy_max_hp = stage_data["enemy_hp"]
 
-    # ดึงค่าตัวละคร 3 ตัวที่ถูกเลือกใช้งาน
-    team_units = PLAYER_DATA["loadout"]
-    unit_buttons = [pygame.Rect(24 + i * 200, 510, 185, 76) for i in range(3)]
-    cooldown_timers = [0.0, 0.0, 0.0]
+        # ระบบแร่และทรัพยากร
+        self.minerals = 150
+        self.production_level = 1
+        self.max_minerals = 150
 
-    upgrade_rect = pygame.Rect(650, 515, 170, 68)
-    menu_rect = pygame.Rect(400, 380, 200, 60)
+        # ตัวจัดการเวลาและศัตรู
+        self.enemy_spawn_timer = stage_data["spawn_timer"]
+        
+        # รายการยูนิตและกระสุน
+        self.units = []
+        self.projectiles = []
 
-    # ปุ่มและสถานะ Pause
-    paused = False
-    pause_rect = pygame.Rect(WIDTH - 125, 20, 100, 42)
-    resume_rect = pygame.Rect(WIDTH // 2 - 110, 270, 220, 48)
-    restart_rect = pygame.Rect(WIDTH // 2 - 110, 330, 220, 48)
-    pause_home_rect = pygame.Rect(WIDTH // 2 - 110, 390, 220, 48)
+        # สถานะเกม
+        self.game_over = None
+        self.reward_given = False
+        self.paused = False
 
-    while True:
-        dt = min(clock.tick(60) / 1000.0, 0.05)
+        # ข้อมูลตัวละครและการกดปุ่ม
+        self.team_units = PLAYER_DATA["loadout"]
+        self.unit_buttons = [pygame.Rect(24 + i * 200, 510, 185, 76) for i in range(3)]
+        self.cooldown_timers = [0.0, 0.0, 0.0]
 
-        # จัดการ Event การคลิกเมาส์และปิดเกม
+        # ปุ่ม UI ต่างๆ
+        self.upgrade_rect = pygame.Rect(650, 515, 170, 68)
+        self.menu_rect = pygame.Rect(400, 380, 200, 60)
+        self.pause_rect = pygame.Rect(WIDTH - 125, 20, 100, 42)
+        self.resume_rect = pygame.Rect(WIDTH // 2 - 110, 270, 220, 48)
+        self.restart_rect = pygame.Rect(WIDTH // 2 - 110, 330, 220, 48)
+        self.pause_home_rect = pygame.Rect(WIDTH // 2 - 110, 390, 220, 48)
+
+    def handle_events(self):
+        """จัดการ Event การคลิกเมาส์และปิดเกม"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 pos = event.pos
-                if game_over: # เกมจบ กดกลับหน้าหลัก
-                    if menu_rect.collidepoint(pos):
-                        return
-                elif paused:
-                    # ตัวเลือกในหน้า Pause
-                    if resume_rect.collidepoint(pos):
-                        paused = False
-                    elif restart_rect.collidepoint(pos):
-                        run_battle_game(stage_data)
-                        return
-                    elif pause_home_rect.collidepoint(pos):
-                        return
-                elif pause_rect.collidepoint(pos):
-                    paused = True
+                if self.game_over:
+                    if self.menu_rect.collidepoint(pos):
+                        return "EXIT"
+                elif self.paused:
+                    if self.resume_rect.collidepoint(pos):
+                        self.paused = False
+                    elif self.restart_rect.collidepoint(pos):
+                        return "RESTART"
+                    elif self.pause_home_rect.collidepoint(pos):
+                        return "EXIT"
+                elif self.pause_rect.collidepoint(pos):
+                    self.paused = True
                 else:
-                    # ตรวจสอบการกดปุ่มปล่อยตัวละครออกไปสู้
-                    for i, rect in enumerate(unit_buttons):
-                        u_id = team_units[i]
+                    # ตรวจสอบการกดปุ่มปล่อยตัวละคร
+                    for i, rect in enumerate(self.unit_buttons):
+                        u_id = self.team_units[i]
                         if rect.collidepoint(pos):
                             u_data = ALL_UNITS_DATABASE[u_id]
-                            if minerals >= u_data["cost"] and cooldown_timers[i] <= 0: 
-                                minerals -= u_data["cost"]
-                                units.append(Unit(player_base + 42, "player", u_id))
-                                cooldown_timers[i] = u_data["cooldown"]
+                            if self.minerals >= u_data["cost"] and self.cooldown_timers[i] <= 0:
+                                self.minerals -= u_data["cost"]
+                                self.units.append(PlayerUnit(self.player_base + 42, u_id))
+                                self.cooldown_timers[i] = u_data["cooldown"]
 
                     # ตรวจสอบการกดปุ่มอัปเกรดแร่
-                    if upgrade_rect.collidepoint(pos):
-                        cost = 75 * production_level
-                        if minerals >= cost:
-                            minerals -= cost
-                            production_level += 1
-                            max_minerals += 100  # <--- เพิ่มขีดจำกัดแร่สูงสุดทีละ 100 ทุกครั้งที่อัปเกรด
+                    if self.upgrade_rect.collidepoint(pos):
+                        cost = 75 * self.production_level
+                        if self.minerals >= cost:
+                            self.minerals -= cost
+                            self.production_level += 1
+                            self.max_minerals += 100
+        return None
 
-        # วาดพื้นหลังฉากเกม
-        bg_img = ASSETS.get(stage_data["bg_key"])
+    def update(self, dt):
+        """อัปเดตการต่อสู้ การเคลื่อนที่ แร่ และเงื่อนไขแพ้ชนะ"""
+        if self.game_over or self.paused:
+            return
+
+        # อัปเดตเวลา Cooldown ของปุ่มตัวละคร
+        for i in range(3):
+            if self.cooldown_timers[i] > 0:
+                self.cooldown_timers[i] = max(0, self.cooldown_timers[i] - dt)
+
+        # ระบบผลิตแร่อัตโนมัติ
+        production_interval = max(0.65, 2.5 / (1 + (self.production_level - 1) * 0.65))
+        self.minerals = min(self.max_minerals, self.minerals + (25 / production_interval) * dt)
+
+        # ระบบเกิดยูนิตฝ่ายศัตรู
+        self.enemy_spawn_timer -= dt
+        if self.enemy_spawn_timer <= 0:
+            self.enemy_spawn_timer = self.stage_data["spawn_timer"]
+            kind = random.choices([5, 6, 7, 8], weights=self.stage_data["enemy_weights"])[0]
+            self.units.append(EnemyUnit(self.enemy_base - 42, kind))
+
+        # อัปเดตการเคลื่อนที่และการโจมตีของยูนิตทั้งหมด
+        for unit in self.units:
+            if not unit.alive:
+                continue
+            
+            enemies = [u for u in self.units if u.alive and u.team != unit.team]
+            targets = [u for u in enemies if (u.x >= unit.x if unit.team == "player" else u.x <= unit.x)]
+            nearest = min(targets, key=lambda u: abs(u.x - unit.x)) if targets else None
+            dist = abs(nearest.x - unit.x) if nearest else (self.enemy_base - unit.x if unit.team == "player" else unit.x - self.player_base)
+
+            if dist > unit.data["range"]:
+                unit.move(dt)
+            else:
+                unit.attack_timer -= dt
+                if unit.attack_timer <= 0:
+                    unit.attack_timer = unit.data["cooldown"]
+                    if nearest:
+                        self.projectiles.append(Projectile(
+                            unit.x, unit.y - 23, nearest,
+                            unit.data["damage"], unit.projectile_color
+                        ))
+                    else:
+                        if unit.team == "player":
+                            self.enemy_hp -= unit.data["damage"]
+                        else:
+                            self.player_hp -= unit.data["damage"]
+
+        # อัปเดตตำแหน่งกระสุนและกรองเอากระสุนที่ใช้งานอยู่ออก
+        for proj in self.projectiles:
+            proj.update(dt)
+        self.projectiles = [p for p in self.projectiles if p.alive]
+        self.units = [u for u in self.units if u.alive]
+
+        # ตรวจสอบเงื่อนไขแพ้-ชนะ
+        if self.enemy_hp <= 0:
+            self.game_over = "WIN"
+            if not self.reward_given:
+                PLAYER_DATA["coins"] += self.stage_data["gold_reward"]
+                PLAYER_DATA["rubies"] += self.stage_data["ruby_reward"]
+                self.reward_given = True
+        elif self.player_hp <= 0:
+            self.game_over = "LOSE"
+
+    def draw(self):
+        """วาดองค์ประกอบทั้งหมดบนหน้าจอ"""
+        # พื้นหลังฉากเกม
+        bg_img = ASSETS.get(self.stage_data["bg_key"])
         if bg_img:
             screen.blit(bg_img, (0, 0))
         else:
             screen.fill(SKY)
             pygame.draw.rect(screen, GRASS, (0, 420, WIDTH, 100))
         
-        # วาดฐานทัพ, ยูนิต และกระสุน
-        screen.blit(ASSETS["player_base"], (player_base - 60, 300))
-        screen.blit(ASSETS["enemy_base"], (enemy_base - 60, 300))
+        # วาดฐานทัพและหลอดเลือดป้อม
+        screen.blit(ASSETS["player_base"], (self.player_base - 60, 300))
+        screen.blit(ASSETS["enemy_base"], (self.enemy_base - 60, 300))
         
-        pygame.draw.rect(screen, (65, 65, 65), (int(player_base - 21), int(275), 40, 5), border_radius=2)
-        hpp = max(0, int(38 * player_hp / player_max_hp))
-        pygame.draw.rect(screen, GREEN , (int(player_base-20), int(276), hpp, 3), border_radius=2)
+        pygame.draw.rect(screen, (65, 65, 65), (int(self.player_base - 21), int(275), 40, 5), border_radius=2)
+        hpp = max(0, int(38 * self.player_hp / self.player_max_hp))
+        pygame.draw.rect(screen, GREEN, (int(self.player_base - 20), int(276), hpp, 3), border_radius=2)
         
-        pygame.draw.rect(screen, (65, 65, 65), (int(enemy_base - 21), int(275), 40, 5), border_radius=2)
-        hpe = max(0, int(38 * enemy_hp / enemy_max_hp))
-        pygame.draw.rect(screen, RED , (int(enemy_base-20), int(276), hpe, 3), border_radius=2)
+        pygame.draw.rect(screen, (65, 65, 65), (int(self.enemy_base - 21), int(275), 40, 5), border_radius=2)
+        hpe = max(0, int(38 * self.enemy_hp / self.enemy_max_hp))
+        pygame.draw.rect(screen, RED, (int(self.enemy_base - 20), int(276), hpe, 3), border_radius=2)
 
-        # วาด UI แผงควบคุมด้านล่าง (แร่, ปุ่มยูนิต, ปุ่มอัปเกรด)
+        # วาด UI แผงควบคุมด้านล่าง
         pygame.draw.rect(screen, DARK_PANEL, (0, 490, WIDTH, 130))
                 
-        for unit in units: 
+        for unit in self.units:
             unit.draw()
-        for proj in projectiles: 
+        for proj in self.projectiles:
             proj.draw()
-        
-        
                 
-        # แสดงผลแร่ปัจจุบัน / ขีดจำกัดสูงสุด เช่น 126 / 500
-        draw_text(f"แร่: {int(minerals)} / {max_minerals}", 450, 20, BIG, YELLOW_GOLD)
+        # แสดงผลแร่ปัจจุบัน
+        draw_text(f"แร่: {int(self.minerals)} / {self.max_minerals}", 450, 20, BIG, YELLOW_GOLD)
 
-        
-        # วาดปุ่มตัวละครพร้อมจัดการสถานะติดคูลดาวน์หรือแร่ไม่พอ
-        for i, rect in enumerate(unit_buttons):
-            u_id = team_units[i]
+        # วาดปุ่มตัวละคร
+        for i, rect in enumerate(self.unit_buttons):
+            u_id = self.team_units[i]
             if u_id is not None:
                 data = ALL_UNITS_DATABASE[u_id]
                 pygame.draw.rect(screen, data["color"], rect, border_radius=9)
                 pygame.draw.rect(screen, (255, 255, 255) if ALL_UNITS_DATABASE[u_id]["stars"] == 1 else YELLOW_GOLD, rect, width=2, border_radius=9)
         
-                on_cooldown = cooldown_timers[i] > 0
-                not_enough_minerals = minerals < data["cost"]
+                on_cooldown = self.cooldown_timers[i] > 0
+                not_enough_minerals = self.minerals < data["cost"]
         
-                # ใส่เอฟเฟกต์สีดำทับปุ่มถ้าไม่สามารถกดได้
                 if on_cooldown or not_enough_minerals:
                     overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
                     overlay.fill((0, 0, 0, 150))
                     screen.blit(overlay, rect.topleft)
         
                 if on_cooldown:
-                    draw_text(f"{cooldown_timers[i]:.1f}s", rect.centerx, rect.centery, FONT, WHITE, center=True)
+                    draw_text(f"{self.cooldown_timers[i]:.1f}s", rect.centerx, rect.centery, FONT, WHITE, center=True)
         
                 draw_text(f"{data['name']}", rect.centerx, rect.centery - 10, FONT, WHITE, center=True)
                 draw_text(f"ใช้ {data['cost']} แร่", rect.centerx, rect.centery + 12, SMALL, YELLOW_GOLD, center=True)
         
         # วาดปุ่มอัปเกรดแร่
-        upgrade_cost = 75 * production_level
-        pygame.draw.rect(screen, YELLOW_GOLD, upgrade_rect, border_radius=9)
-        draw_text(f"อัปเกรดแร่ (Lv.{production_level})", upgrade_rect.centerx, upgrade_rect.centery - 10, FONT, BLACK, center=True)
-        draw_text(f"(ใช้ {upgrade_cost} แร่)", upgrade_rect.centerx, upgrade_rect.centery + 12, SMALL, DARK_PANEL, center=True)
-
+        upgrade_cost = 75 * self.production_level
+        pygame.draw.rect(screen, YELLOW_GOLD, self.upgrade_rect, border_radius=9)
+        draw_text(f"อัปเกรดแร่ (Lv.{self.production_level})", self.upgrade_rect.centerx, self.upgrade_rect.centery - 10, FONT, BLACK, center=True)
+        draw_text(f"(ใช้ {upgrade_cost} แร่)", self.upgrade_rect.centerx, self.upgrade_rect.centery + 12, SMALL, DARK_PANEL, center=True)
 
         # วาดปุ่ม Pause
-        if not game_over:
-            pygame.draw.rect(screen, ORANGE_BORDER if paused else BLUE, pause_rect, border_radius=8)
-            draw_text("PAUSED" if paused else "|| Pause",
-            pause_rect.centerx, pause_rect.centery, FONT, WHITE, center=True)
+        if not self.game_over:
+            pygame.draw.rect(screen, ORANGE_BORDER if self.paused else BLUE, self.pause_rect, border_radius=8)
+            draw_text("PAUSED" if self.paused else "|| Pause", self.pause_rect.centerx, self.pause_rect.centery, FONT, WHITE, center=True)
 
-        if not game_over and not paused:
-            # อัปเดตเวลา Cooldown ของปุ่มตัวละคร (หยุดนับระหว่าง Pause)
-            for i in range(3):
-                if cooldown_timers[i] > 0:
-                    cooldown_timers[i] = max(0, cooldown_timers[i] - dt)
-
-            # ระบบผลิตแร่อัตโนมัติ (จำกัดไม่ให้เกิน max_minerals)
-            production_interval = max(0.65, 2.5 / (1 + (production_level - 1) * 0.65))
-            minerals = min(max_minerals, minerals + (25 / production_interval) * dt)
-
-            # ระบบเกิดยูนิตฝ่ายศัตรู
-            enemy_spawn_timer -= dt
-            if enemy_spawn_timer <= 0:
-                enemy_spawn_timer = stage_data["spawn_timer"]
-                kind = random.choices([5, 6, 7, 8], weights=stage_data["enemy_weights"])[0]
-                units.append(Unit(enemy_base - 42, "enemy", kind))
-
-            # อัปเดตการเคลื่อนที่และการโจมตีของยูนิตทั้งหมด
-            for unit in units:
-                if not unit.alive: 
-                    continue
-                
-                enemies = [u for u in units if u.alive and u.team != unit.team] #ทุกคนที่ไม่ใช่พวกของ unit
-                targets = [u for u in enemies if (u.x >= unit.x if unit.team == "player" else u.x <= unit.x)] #เลือกเฉพาะศัตรูที่อยู่ด้านหน้าของตัวละครเรา
-                nearest = min(targets, key=lambda u: abs(u.x - unit.x)) if targets else None
-                dist = abs(nearest.x - unit.x) if nearest else (enemy_base - unit.x if unit.team == "player" else unit.x - player_base) #ระยะจากเราไปเป้าหมาย หรือ จากเราไปฐานเขา
-
-                
-                if dist > unit.data["range"]: #เดิน
-                    unit.x += unit.speed * dt * (1 if unit.team == "player" else -1)
-                else: #โจมตี
-                    unit.attack_timer -= dt
-                    if unit.attack_timer <= 0:
-                        unit.attack_timer = unit.data["cooldown"]
-                        if nearest: #ตีคน
-                            proj_color = (0, 200, 255) if unit.team == "player" else (255, 100, 100)
-                            projectiles.append(Projectile(unit.x, unit.y - 23, nearest, unit.data["damage"], proj_color))
-                        else: #ตีป้อม
-                            if unit.team == "player": 
-                                enemy_hp -= unit.data["damage"]
-                            else: 
-                                player_hp -= unit.data["damage"]
-
-            # อัปเดตตำแหน่งกระสุนและกรองเอากระสุนที่ใช้งานอยู่ออก
-            for proj in projectiles:
-                proj.update(dt)
-            projectiles = [p for p in projectiles if p.alive]
-            units = [u for u in units if u.alive]
-
-            # ตรวจสอบเงื่อนไขแพ้-ชนะ
-            if enemy_hp <= 0:
-                game_over = "WIN"
-                if not reward_given:
-                    PLAYER_DATA["coins"] += stage_data["gold_reward"]
-                    PLAYER_DATA["rubies"] += stage_data["ruby_reward"]
-                    reward_given = True
-            elif player_hp <= 0:
-                game_over = "LOSE"
-
-        
         # หน้าต่าง Pause
-        if paused and not game_over:
+        if self.paused and not self.game_over:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 185))
             screen.blit(overlay, (0, 0))
 
             draw_text("PAUSE", WIDTH // 2, 205, BIG, YELLOW_GOLD, center=True)
 
-            pygame.draw.rect(screen, GREEN, resume_rect, border_radius=10)
-            draw_text("เล่นต่อ", resume_rect.centerx, resume_rect.centery,
-                      FONT, WHITE, center=True)
+            pygame.draw.rect(screen, GREEN, self.resume_rect, border_radius=10)
+            draw_text("เล่นต่อ", self.resume_rect.centerx, self.resume_rect.centery, FONT, WHITE, center=True)
 
-            pygame.draw.rect(screen, ORANGE_BORDER, restart_rect, border_radius=10)
-            draw_text("เริ่มเกมใหม่", restart_rect.centerx, restart_rect.centery,
-                      FONT, WHITE, center=True)
+            pygame.draw.rect(screen, ORANGE_BORDER, self.restart_rect, border_radius=10)
+            draw_text("เริ่มเกมใหม่", self.restart_rect.centerx, self.restart_rect.centery, FONT, WHITE, center=True)
 
-            pygame.draw.rect(screen, RED_TAG, pause_home_rect, border_radius=10)
-            draw_text("กลับหน้าหลัก", pause_home_rect.centerx, pause_home_rect.centery,
-                      FONT, WHITE, center=True)
+            pygame.draw.rect(screen, RED_TAG, self.pause_home_rect, border_radius=10)
+            draw_text("กลับหน้าหลัก", self.pause_home_rect.centerx, self.pause_home_rect.centery, FONT, WHITE, center=True)
 
         # หน้าต่างแสดงผลเมื่อจบเกม (ชนะ / แพ้)
-        if game_over:
+        if self.game_over:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
             screen.blit(overlay, (0, 0))
             
-            if game_over == "WIN":
+            if self.game_over == "WIN":
                 draw_text("ชนะ!", WIDTH // 2, 220, BIG, YELLOW_GOLD, center=True)
-                draw_text(f"ได้รับ: Coin +{stage_data['gold_reward']} | ruby +{stage_data['ruby_reward']}", WIDTH // 2, 280, FONT, WHITE, center=True)
+                draw_text(f"ได้รับ: Coin +{self.stage_data['gold_reward']} | ruby +{self.stage_data['ruby_reward']}", WIDTH // 2, 280, FONT, WHITE, center=True)
             else:
                 draw_text("แพ้!", WIDTH // 2, 230, BIG, RED, center=True)
 
-            pygame.draw.rect(screen, BLUE, menu_rect, border_radius=10)
-            draw_text("กลับหน้าหลัก", menu_rect.centerx, menu_rect.centery, FONT, WHITE, center=True)
+            pygame.draw.rect(screen, BLUE, self.menu_rect, border_radius=10)
+            draw_text("กลับหน้าหลัก", self.menu_rect.centerx, self.menu_rect.centery, FONT, WHITE, center=True)
 
         pygame.display.flip()
+
+    def run(self):
+        """ลูปหลักของการรันเกมต่อสู้ (Main Loop)"""
+        while True:
+            dt = min(clock.tick(60) / 1000.0, 0.05)
+
+            action = self.handle_events()
+            if action == "EXIT":
+                return
+            elif action == "RESTART":
+                return "RESTART"
+
+            self.update(dt)
+            self.draw()
+
+
