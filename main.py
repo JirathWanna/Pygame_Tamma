@@ -4,7 +4,7 @@ import math
 import sys
 from game_data import *
 from team import run_team_screen
-from battle import run_stage_select
+from battle import Game
 
 # Gacha System Logic & Animation
 # ==========================================
@@ -114,7 +114,7 @@ def main_lobby():
 
             # --- TAB 3: อัปเกรด (UPGRADE) ---
             elif active_tab == "UPGRADE":
-                draw_text("อัปเกรดพลังโจมตีเรนเจอร์", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
+                draw_text("อัปเกรดตัวละคร", pop_rect.centerx, pop_rect.top + 30, BIG, BLACK, center=True)
                 draw_text("ใช้ Wheel Scroll เพื่อเลื่อนดูรายการ", pop_rect.centerx, pop_rect.top + 65, SMALL, (120, 120, 120), center=True)
                 
                 # กำหนดพื้นที่แสดงผลรายการอัปเกรด (Clipping Area) เพื่อไม่ให้ล้นออกนอกกรอบ
@@ -217,6 +217,51 @@ def main_lobby():
                             else:
                                 active_tab = item_id
                                 upgrade_scroll_offset = 0 # รีเซ็ตค่า Scroll ทุกครั้งที่เปิดแท็บใหม่
+
+        pygame.display.flip()
+        clock.tick(60)
+
+# =====================================================================
+# STAGE SELECT FUNCTION (หน้าจอเลือกด่าน)
+# =====================================================================
+def run_stage_select():
+    while True:
+        screen.fill((40, 45, 60))
+        draw_text("เลือกด่านที่ต้องการเล่น", WIDTH // 2, 60, BIG, YELLOW_GOLD, center=True)
+
+        stage_rects = []
+        for i, stage in enumerate(STAGES):
+            rect = pygame.Rect(200, 130 + i * 120, 600, 95)
+            pygame.draw.rect(screen, WHITE, rect, border_radius=12)
+            pygame.draw.rect(screen, ORANGE_BORDER, rect, 3, border_radius=12)
+            
+            draw_text(stage["name"], rect.x + 20, rect.y + 18, FONT, BLACK)
+            draw_text(f"รางวัล: gold+{stage['gold_reward']} | ruby+{stage['ruby_reward']}", rect.x + 20, rect.y + 55, SMALL, (80, 140, 60))
+            
+            play_btn = pygame.Rect(rect.right - 140, rect.centery - 25, 120, 50)
+            pygame.draw.rect(screen, GREEN, play_btn, border_radius=10)
+            draw_text("Play", play_btn.centerx, play_btn.centery, FONT, WHITE, center=True)
+            
+            stage_rects.append((play_btn, stage))
+
+        back_rect = pygame.Rect(50, 40, 120, 45)
+        pygame.draw.rect(screen, RED_TAG, back_rect, border_radius=10)
+        draw_text("‹ กลับ", back_rect.centerx, back_rect.centery, FONT, WHITE, center=True)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if back_rect.collidepoint(event.pos):
+                    return
+                for btn, stage in stage_rects:
+                    if btn.collidepoint(event.pos):
+                        while True:
+                            game = Game(stage)
+                            result = game.run()
+                            if result != "RESTART":
+                                break
 
         pygame.display.flip()
         clock.tick(60)
