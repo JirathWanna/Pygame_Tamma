@@ -1,5 +1,9 @@
 # Pygame_Tamma (แยกไฟล์)
 
+15-seconds Demo Video
+https://youtu.be/HVM8NMHxUQI
+
+
 ## โครงสร้าง
 - `main.py` — หน้าล็อบบี้, เมนู, กาชา และเชื่อมหน้าต่าง ๆ
 - `battle.py` — เลือกด่าน, คลาส `Unit`, ระบบต่อสู้
